@@ -340,7 +340,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Contact
 
 **Tafirenyika Shoniwa**
-- Email: tafirenyika.shoniwa@example.com
+- Email: tafirenyika.shoniwa@icloud.com
 - GitHub: [@tshoniwa](https://github.com/tshoniwa)
 - LinkedIn: [Tafirenyika Shoniwa](https://linkedin.com/in/tshoniwa)
 
