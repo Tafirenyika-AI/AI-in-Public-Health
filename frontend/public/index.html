@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Health Monitor - Personal & Public Health Monitoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            max-width: 400px;
+            margin: 0 auto 30px;
+        }
+
+        .dashboard {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .health-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .metric {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .recommendations {
+            list-style: none;
+        }
+
+        .recommendations li {
+            background: #e7f3ff;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .risk-level {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .risk-low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .risk-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .risk-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .login-container {
+                padding: 20px;
+            }
+            
+            .navigation {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 AI Health Monitor</h1>
+            <p>Personal & Public Health Monitoring with AI-Powered Disease Prediction</p>
+        </div>
+
+        <!-- Login Form -->
+        <div class="login-container" id="loginContainer">
+            <h3>Login to Your Health Dashboard</h3>
+            <div id="authMessage"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="btn">Login</button>
+                <button type="button" class="btn btn-secondary" onclick="showRegister()">Register</button>
+            </form>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="login-container" id="registerContainer" style="display: none;">
+            <h3>Create Your Health Account</h3>
+            <div id="regMessage"></div>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="regEmail">Email:</label>
+                    <input type="email" id="regEmail" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password:</label>
+                    <input type="password" id="regPassword" required placeholder="Choose a strong password">
+                </div>
+                <div class="form-group">
+                    <label for="firstName">First Name:</label>
+                    <input type="text" id="firstName" required placeholder="Your first name">
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name:</label>
+                    <input type="text" id="lastName" required placeholder="Your last name">
+                </div>
+                <div class="form-group">
+                    <label for="age">Age:</label>
+                    <input type="number" id="age" placeholder="Your age">
+                </div>
+                <div class="form-group">
+                    <label for="location">Location:</label>
+                    <input type="text" id="location" placeholder="Your city">
+                </div>
+                <button type="submit" class="btn">Register</button>
+                <button type="button" class="btn btn-secondary" onclick="showLogin()">Back to Login</button>
+            </form>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation" id="navigation" style="display: none;">
+            <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
+            <button class="nav-btn" onclick="showSection('symptoms')">Report Symptoms</button>
+            <button class="nav-btn" onclick="showSection('health')">Health Records</button>
+            <button class="nav-btn" onclick="showSection('predictions')">AI Predictions</button>
+            <button class="nav-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <!-- User Overview -->
+            <div class="card">
+                <h3>📊 Health Overview</h3>
+                <div id="healthOverview" class="loading">Loading...</div>
+            </div>
+
+            <!-- Latest Vitals -->
+            <div class="card">
+                <h3>💓 Latest Vitals</h3>
+                <div id="latestVitals" class="loading">Loading...</div>
+            </div>
+
+            <!-- Health Alerts -->
+            <div class="card">
+                <h3>⚠️ Health Alerts</h3>
+                <div id="healthAlerts" class="loading">Loading...</div>
+            </div>
+
+            <!-- Quick Health Check -->
+            <div class="card">
+                <h3>🩺 Quick Health Check</h3>
+                <form id="quickCheckForm">
+                    <div class="form-group">
+                        <label for="symptomText">Current Symptoms:</label>
+                        <textarea id="symptomText" rows="3" placeholder="Describe any symptoms you're experiencing..."></textarea>
+                    </div>
+                    <div class="health-metrics">
+                        <div>
+                            <label for="bpSystolic">Blood Pressure (Systolic):</label>
+                            <input type="number" id="bpSystolic" placeholder="120">
+                        </div>
+                        <div>
+                            <label for="bpDiastolic">Blood Pressure (Diastolic):</label>
+                            <input type="number" id="bpDiastolic" placeholder="80">
+                        </div>
+                        <div>
+                            <label for="heartRate">Heart Rate:</label>
+                            <input type="number" id="heartRate" placeholder="70">
+                        </div>
+                        <div>
+                            <label for="temperature">Temperature (°F):</label>
+                            <input type="number" id="temperature" step="0.1" placeholder="98.6">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Run Quick Check</button>
+                </form>
+                <div id="quickCheckResult"></div>
+            </div>
+
+            <!-- Environmental Data -->
+            <div class="card">
+                <h3>🌍 Environmental Health</h3>
+                <button class="btn" onclick="getEnvironmentalData()">Get Current Data</button>
+                <div id="environmentalData" class="loading">Click to load environmental data...</div>
+            </div>
+
+            <!-- User Statistics -->
+            <div class="card">
+                <h3>📈 Your Health Statistics</h3>
+                <div id="userStats" class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let authToken = localStorage.getItem('authToken');
+        let currentUser = null;
+        const API_BASE = 'http://localhost:5000/api';
+
+        // Initialize the app
+        if (authToken) {
+            showDashboard();
+        }
+
+        // Authentication functions
+        async function login(email, password) {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.access_token;
+                    currentUser = data.user;
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    showDashboard();
+                    return { success: true };
+                } else {
+                    return { success: false, error: data.error };
+                }
+            } catch (error) {
+                return { success: false, error: 'Network error. Please try again.' };
+            }
+        }
+
+        async function register(userData) {
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.access_token;
+                    currentUser = data.user;
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    showDashboard();
+                    return { success: true };
+                } else {
+                    return { success: false, error: data.error };
+                }
+            } catch (error) {
+                return { success: false, error: 'Network error. Please try again.' };
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            showLogin();
+        }
+
+        // UI functions
+        function showLogin() {
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('registerContainer').style.display = 'none';
+            document.getElementById('navigation').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('registerContainer').style.display = 'block';
+        }
+
+        function showDashboard() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('registerContainer').style.display = 'none';
+            document.getElementById('navigation').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'grid';
+            
+            // Load dashboard data
+            loadDashboardData();
+        }
+
+        function showSection(section) {
+            // Update navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // For now, all sections show the dashboard
+            // In a full implementation, you'd have separate sections
+        }
+
+        // API functions
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                }
+            };
+
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                
+                if (response.status === 401) {
+                    logout();
+                    return null;
+                }
+                
+                return { success: response.ok, data };
+            } catch (error) {
+                console.error('API call failed:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Dashboard functions
+        async function loadDashboardData() {
+            // Load health overview
+            const overview = await apiCall('/dashboard/overview');
+            if (overview && overview.success) {
+                displayHealthOverview(overview.data.overview);
+            }
+
+            // Load health alerts
+            const alerts = await apiCall('/dashboard/alerts');
+            if (alerts && alerts.success) {
+                displayHealthAlerts(alerts.data.alerts);
+            }
+
+            // Load user statistics
+            const stats = await apiCall('/dashboard/statistics');
+            if (stats && stats.success) {
+                displayUserStats(stats.data.statistics);
+            }
+        }
+
+        function displayHealthOverview(overview) {
+            const container = document.getElementById('healthOverview');
+            
+            const html = `
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value">${overview.user_info.name}</div>
+                        <div class="stat-label">User</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${overview.user_info.age || 'N/A'}</div>
+                        <div class="stat-label">Age</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${overview.total_records}</div>
+                        <div class="stat-label">Records</div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            
+            // Display latest vitals if available
+            if (overview.health_metrics && overview.health_metrics.latest_vitals) {
+                displayLatestVitals(overview.health_metrics.latest_vitals);
+            }
+        }
+
+        function displayLatestVitals(vitals) {
+            const container = document.getElementById('latestVitals');
+            
+            const html = `
+                <div class="health-metrics">
+                    <div class="metric">
+                        <div class="metric-value">${vitals.heart_rate || 'N/A'}</div>
+                        <div class="metric-label">Heart Rate (bpm)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${vitals.blood_pressure ? `${vitals.blood_pressure.systolic}/${vitals.blood_pressure.diastolic}` : 'N/A'}</div>
+                        <div class="metric-label">Blood Pressure</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${vitals.temperature || 'N/A'}</div>
+                        <div class="metric-label">Temperature (°F)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${vitals.weight || 'N/A'}</div>
+                        <div class="metric-label">Weight (lbs)</div>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 10px; color: #666; font-size: 0.9rem;">
+                    Last updated: ${new Date(vitals.recorded_at).toLocaleDateString()}
+                </p>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function displayHealthAlerts(alerts) {
+            const container = document.getElementById('healthAlerts');
+            
+            if (!alerts || alerts.length === 0) {
+                container.innerHTML = '<p style="color: #28a745; text-align: center;">✅ No health alerts. You\'re doing great!</p>';
+                return;
+            }
+
+            const html = alerts.map(alert => `
+                <div class="alert alert-${alert.severity === 'high' ? 'error' : alert.severity === 'medium' ? 'warning' : 'success'}">
+                    <h4>${alert.title}</h4>
+                    <p>${alert.message}</p>
+                    ${alert.recommendations ? `
+                        <ul class="recommendations">
+                            ${alert.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    ` : ''}
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+
+        function displayUserStats(stats) {
+            const container = document.getElementById('userStats');
+            
+            const html = `
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.total_health_records}</div>
+                        <div class="stat-label">Health Records</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.total_symptom_reports}</div>
+                        <div class="stat-label">Symptom Reports</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.total_risk_assessments}</div>
+                        <div class="stat-label">Risk Assessments</div>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 15px; color: #666; font-size: 0.9rem;">
+                    Member since: ${new Date(stats.account_created).toLocaleDateString()}
+                </p>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        async function runQuickCheck() {
+            const form = document.getElementById('quickCheckForm');
+            const formData = new FormData(form);
+            
+            const checkData = {
+                symptom_text: document.getElementById('symptomText').value,
+                bp_systolic: parseInt(document.getElementById('bpSystolic').value) || 0,
+                bp_diastolic: parseInt(document.getElementById('bpDiastolic').value) || 0,
+                heart_rate: parseInt(document.getElementById('heartRate').value) || 0,
+                temperature: parseFloat(document.getElementById('temperature').value) || 0
+            };
+
+            const result = await apiCall('/predictions/quick-check', 'POST', checkData);
+            
+            if (result && result.success) {
+                displayQuickCheckResult(result.data);
+            } else {
+                document.getElementById('quickCheckResult').innerHTML = 
+                    '<div class="alert alert-error">Failed to perform quick check. Please try again.</div>';
+            }
+        }
+
+        function displayQuickCheckResult(result) {
+            const container = document.getElementById('quickCheckResult');
+            
+            const statusColor = result.status === 'urgent' ? 'error' : 
+                               result.status === 'warning' ? 'warning' : 'success';
+            
+            const html = `
+                <div class="alert alert-${statusColor}" style="margin-top: 15px;">
+                    <h4>Health Check Result: ${result.status.toUpperCase()}</h4>
+                    ${result.alerts.length > 0 ? `
+                        <p><strong>Alerts:</strong></p>
+                        <ul>
+                            ${result.alerts.map(alert => `<li>${alert}</li>`).join('')}
+                        </ul>
+                    ` : '<p>No immediate health concerns detected.</p>'}
+                    <p><strong>Recommendations:</strong></p>
+                    <ul class="recommendations">
+                        ${result.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
+                    <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                        Checked at: ${new Date(result.checked_at).toLocaleString()}
+                    </p>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        async function getEnvironmentalData() {
+            const container = document.getElementById('environmentalData');
+            container.innerHTML = '<div class="loading">Loading environmental data...</div>';
+            
+            // Use a default location or get from user location
+            const location = currentUser?.location || 'Worcester, MA';
+            
+            const result = await apiCall(`/environmental/current?location=${encodeURIComponent(location)}`);
+            
+            if (result && result.success) {
+                const env = result.data.environmental_data;
+                const html = `
+                    <div class="health-metrics">
+                        <div class="metric">
+                            <div class="metric-value">${env.air_quality_index}</div>
+                            <div class="metric-label">Air Quality Index</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${env.temperature}°F</div>
+                            <div class="metric-label">Temperature</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${env.humidity}%</div>
+                            <div class="metric-label">Humidity</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${env.pollen_count}</div>
+                            <div class="metric-label">Pollen Count</div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 10px; color: #666; font-size: 0.9rem;">
+                        Location: ${env.location}
+                    </p>
+                `;
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<div class="alert alert-error">Failed to load environmental data.</div>';
+            }
+        }
+
+        // Event listeners
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const result = await login(email, password);
+            const messageDiv = document.getElementById('authMessage');
+            
+            if (result.success) {
+                messageDiv.innerHTML = '<div class="alert alert-success">Login successful!</div>';
+            } else {
+                messageDiv.innerHTML = `<div class="alert alert-error">${result.error}</div>`;
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userData = {
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPassword').value,
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                age: parseInt(document.getElementById('age').value) || null,
+                location: document.getElementById('location').value
+            };
+            
+            const result = await register(userData);
+            const messageDiv = document.getElementById('regMessage');
+            
+            if (result.success) {
+                messageDiv.innerHTML = '<div class="alert alert-success">Registration successful!</div>';
+            } else {
+                messageDiv.innerHTML = `<div class="alert alert-error">${result.error}</div>`;
+            }
+        });
+
+        document.getElementById('quickCheckForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await runQuickCheck();
+        });
+    </script>
+</body>
+</html>
